@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>木こりと採取者比率調整付きゲーム</title>
+<style>
+  body { margin: 0; background: #222; color: #ddd; font-family: monospace; }
+  canvas { display: block; margin: 0 auto; background: #448844; }
+  #woodCount {
+    position: fixed;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,0.6);
+    padding: 8px 12px;
+    font-size: 18px;
+    border-radius: 8px;
+    color: #fff;
+    user-select: none;
+  }
+  #clearMessage {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: #ffcc00;
+    text-shadow: 2px 2px 6px #000;
+    font-weight: bold;
+    display: none;
+    user-select: none;
+  }
+  #controls {
+    position: fixed;
+    top: 50px; right: 10px;
+    background: rgba(0,0,0,0.6);
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    user-select: none;
+    width: 220px;
+  }
+  #controls label {
+    display: block;
+    margin-bottom: 6px;
+  }
+  #woodcutterCountDisplay {
+    font-weight: bold;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="woodCount">木材: 0</div>
+<div id="clearMessage">Clear the game</div>
+<div id="controls">
+  <label for="woodcutterCountRange">木こりの人数: <span id="woodcutterCountDisplay">10</span> / 20</label>
+  <input type="range" id="woodcutterCountRange" min="0" max="20" value="10" step="1" />
+</div>
+<canvas id="gameCanvas" width="1200" height="900"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  const woodCountDisplay = document.getElementById("woodCount");
+  const clearMessage = document.getElementById("clearMessage");
+  const woodcutterCountRange = document.getElementById("woodcutterCountRange");
+  const woodcutterCountDisplay = document.getElementById("woodcutterCountDisplay");
+
+  const TILE_SIZE = 30;
+  const MAP_COLS = 40;
+  const MAP_ROWS = 30;
+
+  const TILE_GRASS = 0;
+  const TILE_TREE = 1;
+  const TILE_WOODCHIP = 2;
+
+  const mapData = new Array(MAP_ROWS).fill(0).map(() => new Array(MAP_COLS).fill(TILE_GRASS));
+
+  // 初期にランダムで木を植える（15%）
+  for (let r = 0; r < MAP_ROWS; r++) {
+    for (let c = 0; c < MAP_COLS; c++) {
+      if (Math.random() < 0.15) {
+        mapData[r][c] = TILE_TREE;
+      }
+    }
+  }
+
+  const woodResource = { count: 0 };
+
+  // 木こり人数（初期10）
+  let woodcutterCount = 10;
+
+  class Citizen {
+    static reservedTargets = new Map();
+
+    constructor(id, x, y) {
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.state = "idle";
+      this.target = null;
+      this.speed = 5;  // 移動速度5倍
+      this.moveProgress = 0;
+      this.nextX = x;
+      this.nextY = y;
+      this.harvestTime = 0;
+    }
+
+    update(delta) {
+      switch (this.state) {
+        case "idle":
+          this.findTarget();
+          break;
+        case "moving":
+          this.moveStep(delta);
+          break;
+        case "harvesting":
+          this.harvestTime -= delta;
+          if (this.harvestTime <= 0) {
+            this.finishHarvest();
+          }
+          break;
+        case "collecting":
+          this.harvestTime -= delta;
+          if (this.harvestTime <= 0) {
+            this.finishCollect();
+          }
+          break;
+      }
+    }
+
+    static findAvailableTarget(candidates) {
+      for (const pos of candidates) {
+        const key = `${pos.x},${pos.y}`;
+        if (!Citizen.reservedTargets.has(key)) {
+          return pos;
+        }
+      }
+      return null;
+    }
+
+    findTarget() {
+      if (this.target) {
+        const key = `${this.target.x},${this.target.y}`;
+        if (Citizen.reservedTargets.get(key) === this.id) {
+          Citizen.reservedTargets.delete(key);
+        }
+        this.target = null;
+      }
+
+      let candidates = [];
+      if (this.id <= woodcutterCount) { // woodcutterCount人までは木こり
+        candidates = findAllTiles(TILE_TREE);
+      } else { // それ以降は採取者
+        candidates = findAllTiles(TILE_WOODCHIP);
+      }
+
+      candidates.sort((a, b) => {
+        const da = Math.abs(a.x - this.x) + Math.abs(a.y - this.y);
+        const db = Math.abs(b.x - this.x) + Math.abs(b.y - this.y);
+        return da - db;
+      });
+
+      let targetPos = Citizen.findAvailableTarget(candidates);
+
+      if (!targetPos) {
+        if (Math.random() < 0.5) {
+          candidates = findAllTiles(TILE_GRASS);
+          candidates.sort((a, b) => {
+            const da = Math.abs(a.x - this.x) + Math.abs(a.y - this.y);
+            const db = Math.abs(b.x - this.x) + Math.abs(b.y - this.y);
+            return da - db;
+          });
+          targetPos = Citizen.findAvailableTarget(candidates);
+          if (!targetPos) {
+            this.state = "idle";
+            return;
+          }
+        } else {
+          this.state = "idle";
+          return;
+        }
+      }
+
+      const key = `${targetPos.x},${targetPos.y}`;
+      Citizen.reservedTargets.set(key, this.id);
+      this.target = targetPos;
+      this.state = "moving";
+      this.moveProgress = 0;
+    }
+
+    moveStep(delta) {
+      if (!this.target) {
+        this.state = "idle";
+        return;
+      }
+      if (this.moveProgress === 0) {
+        if (this.x !== this.target.x) {
+          this.nextX = this.x + (this.target.x > this.x ? 1 : -1);
+          this.nextY = this.y;
+        } else if (this.y !== this.target.y) {
+          this.nextX = this.x;
+          this.nextY = this.y + (this.target.y > this.y ? 1 : -1);
+        } else {
+          const key = `${this.target.x},${this.target.y}`;
+          if (Citizen.reservedTargets.get(key) === this.id) {
+            Citizen.reservedTargets.delete(key);
+          }
+
+          if (this.id <= woodcutterCount && mapData[this.y][this.x] === TILE_TREE) {
+            this.state = "harvesting";
+            this.harvestTime = 0.4; // 伐採速度5倍（2秒→0.4秒）
+          } else if (this.id > woodcutterCount && mapData[this.y][this.x] === TILE_WOODCHIP) {
+            this.state = "collecting";
+            this.harvestTime = 0.4; // 回収速度5倍
+          } else {
+            this.state = "idle";
+          }
+          this.target = null;
+          return;
+        }
+      }
+
+      this.moveProgress += this.speed * delta;
+      if (this.moveProgress >= 1) {
+        this.x = this.nextX;
+        this.y = this.nextY;
+        this.moveProgress = 0;
+      }
+    }
+
+    finishHarvest() {
+      if (mapData[this.y][this.x] === TILE_TREE) {
+        mapData[this.y][this.x] = TILE_WOODCHIP;
+      }
+      this.state = "idle";
+    }
+
+    finishCollect() {
+      if (mapData[this.y][this.x] === TILE_WOODCHIP) {
+        mapData[this.y][this.x] = TILE_GRASS;
+        woodResource.count++;
+        woodCountDisplay.textContent = `木材: ${woodResource.count}`;
+
+        if (woodResource.count >= 1000) {
+          clearMessage.style.display = "block";
+        }
+      }
+      this.state = "idle";
+    }
+
+    draw(ctx) {
+      let drawX = this.x;
+      let drawY = this.y;
+      if (this.state === "moving" && this.moveProgress > 0) {
+        drawX = this.x + (this.nextX - this.x) * this.moveProgress;
+        drawY = this.y + (this.nextY - this.y) * this.moveProgress;
+      }
+
+      const px = (drawX + 0.5) * TILE_SIZE;
+      const py = (drawY + 0.5) * TILE_SIZE;
+
+      let color = "#aaaaaa";
+      if (this.id <= woodcutterCount) {
+        if (this.state === "harvesting") color = "#ffcc33";
+        else if (this.state === "moving") color = "#ffaa00";
+      } else {
+        if (this.state === "collecting") color = "#3399ff";
+        else if (this.state === "moving") color = "#66bbff";
+      }
+
+      ctx.beginPath();
+      ctx.arc(px, py, TILE_SIZE * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      ctx.fillStyle = "#000";
+      ctx.font = "12px monospace";
+      ctx.fillText(this.id, px - 5, py + 4);
+    }
+  }
+
+  function findAllTiles(tileType) {
+    const results = [];
+    for (let y = 0; y < MAP_ROWS; y++) {
+      for (let x = 0; x < MAP_COLS; x++) {
+        if (mapData[y][x] === tileType) results.push({ x, y });
+      }
+    }
+    return results;
+  }
+
+  const citizens = [];
+  for (let i = 0; i < 20; i++) {
+    let x, y;
+    do {
+      x = Math.floor(Math.random() * MAP_COLS);
+      y = Math.floor(Math.random() * MAP_ROWS);
+    } while (mapData[y][x] !== TILE_GRASS);
+    citizens.push(new Citizen(i + 1, x, y));
+  }
+
+  // 1秒ごとに草原に10本木を生やす
+  function plantRandomTrees() {
+    const grassTiles = findAllTiles(TILE_GRASS);
+    if (grassTiles.length === 0) return;
+    shuffleArray(grassTiles);
+    const count = Math.min(10, grassTiles.length);
+    for (let i = 0; i < count; i++) {
+      const pos = grassTiles[i];
+      mapData[pos.y][pos.x] = TILE_TREE;
+    }
+  }
+
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  setInterval(plantRandomTrees, 1000);
+
+  // スライダーで木こり人数を変更した時の処理
+  woodcutterCountRange.addEventListener("input", (e) => {
+    woodcutterCount = parseInt(e.target.value, 10);
+    woodcutterCountDisplay.textContent = woodcutterCount;
+    // 住民の状態をリセットしてターゲットも解除して役割切り替え反映
+    citizens.forEach(c => {
+      c.state = "idle";
+      c.target = null;
+    });
+    Citizen.reservedTargets.clear();
+  });
+
+  function drawMap() {
+    for (let r = 0; r < MAP_ROWS; r++) {
+      for (let c = 0; c < MAP_COLS; c++) {
+        switch (mapData[r][c]) {
+          case TILE_GRASS:
+            ctx.fillStyle = "#336633";
+            break;
+          case TILE_TREE:
+            ctx.fillStyle = "#225522";
+            break;
+          case TILE_WOODCHIP:
+            ctx.fillStyle = "#997733";
+            break;
+        }
+        ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        ctx.strokeStyle = "#224422";
+        ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      }
+    }
+  }
+
+  let lastTime = performance.now();
+  function mainLoop() {
+    const now = performance.now();
+    const delta = (now - lastTime) / 1000;
+    lastTime = now;
+
+    citizens.forEach((c) => c.update(delta));
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawMap();
+    citizens.forEach((c) => c.draw(ctx));
+
+    requestAnimationFrame(mainLoop);
+  }
+
+  mainLoop();
+})();
+</script>
+
+</body>
+</html>

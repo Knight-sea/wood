@@ -118,58 +118,73 @@
       background-color: #555;
     }
 
-    @media screen and (max-width:600px) {
+    @media screen and (max-width: 600px) {
 
-      #woodCount,
-      #clearMessage {
-        position: fixed;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        right: auto;
-        max-width: 95vw;
+      /* 木材カウントは画面上部に静的に配置 */
+      #woodCount {
+        position: static;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin: 10px auto;
         text-align: center;
       }
 
+      /* canvasも静的配置でwoodCountの下に */
+      canvas {
+        position: static;
+        display: block;
+        margin: 10px auto;
+        max-width: 95vw;
+        height: auto;
+      }
+
+      /* controls周りは画面下部に固定 */
+      #woodcutterCountRange,
       #controls,
       #buttonControls {
-        position: static;
-        width: 95vw;
-        margin: 5px auto;
-        border-radius: 6px;
+        position: fixed;
+        left: 0;
+        width: 100vw;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        z-index: 20;
+      }
+
+      /* スライダーは一番下から60pxの位置 */
+      #woodcutterCountRange {
+        bottom: 60px;
+        height: 36px;
+      }
+
+      /* controlsはスライダーの上、100pxあたりに */
+      #controls {
+        bottom: 100px;
         display: flex;
-        flex-direction: row;
         justify-content: center;
         gap: 12px;
-        padding: 8px 10px;
         font-size: 16px;
       }
 
-      #controls label {
-        margin: 0;
-        white-space: normal;
-        flex-grow: 1;
-        align-self: center;
-      }
-
-      #woodcutterCountRange {
-        flex-grow: 2;
-        height: 24px;
-        margin-left: 6px;
-        align-self: center;
-      }
-
+      /* buttonControlsは一番上の下部に120pxくらいに */
       #buttonControls {
-        margin-top: 0;
-        flex-wrap: nowrap;
-        width: 95vw;
+        bottom: 140px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
       }
 
-      button {
-        width: auto;
-        flex: 1 1 auto;
-        font-size: 16px;
-        padding: 8px 6px;
+      /* #clearMessageは中央固定 */
+      #clearMessage {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90vw;
+        word-wrap: break-word;
+        z-index: 50;
       }
     }
   </style>

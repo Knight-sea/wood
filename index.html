@@ -118,79 +118,81 @@
       background-color: #555;
     }
 
-    @media screen and (max-width: 600px) {
+    @media screen and (max-width:600px) {
 
-      #woodCount,
-      #clearMessage {
-        position: fixed;
-        bottom: 120px;
-        /* 下から少し上に配置 */
-        left: 50%;
-        transform: translateX(-50%);
-        max-width: 95vw;
-        text-align: center;
-        z-index: 30;
+      /* canvas（マップ）は画面の上部で高さを制限しつつ幅いっぱい */
+      #gameCanvas {
+        display: block;
+        width: 100vw;
+        max-height: calc(100vh - 140px);
+        height: auto !important;
+        border: 2px solid #224422;
+        box-sizing: border-box;
       }
 
-      #controls {
+      /* 木材表示はcanvasの下に固定（少し上に余白） */
+      #woodCount {
         position: fixed;
-        bottom: 70px;
-        /* 木材のすぐ下 */
+        bottom: 110px;
         left: 50%;
         transform: translateX(-50%);
-        width: 95vw;
-        padding: 8px 10px;
-        border-radius: 6px;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 12px;
-        font-size: 16px;
-        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 6px 12px;
+        font-size: 18px;
+        border-radius: 8px;
+        color: #fff;
+        user-select: none;
         z-index: 20;
+        max-width: 90vw;
+        white-space: nowrap;
+      }
+
+      /* 人数スライダーは木材表示の下 */
+      #controls {
+        position: fixed;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90vw;
+        max-width: 400px;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 8px 12px;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 16px;
+        user-select: none;
+        z-index: 20;
+        box-sizing: border-box;
       }
 
       #controls label {
-        margin: 0;
-        white-space: nowrap;
-        flex-grow: 1;
-        align-self: center;
+        margin: 0 0 4px 0;
+        white-space: normal;
+        display: block;
       }
 
-      #woodcutterCountRange {
-        flex-grow: 2;
-        height: 24px;
-        margin-left: 6px;
-        align-self: center;
-      }
-
+      /* ボタン3つは画面一番下に横並び */
       #buttonControls {
         position: fixed;
         bottom: 10px;
-        /* 一番下に配置 */
         left: 50%;
         transform: translateX(-50%);
-        width: 95vw;
-        padding: 6px 8px;
-        border-radius: 6px;
+        width: 90vw;
+        max-width: 400px;
         display: flex;
-        flex-direction: row;
         justify-content: space-between;
-        gap: 6px;
-        max-height: 48px;
-        overflow-x: auto;
-        box-sizing: border-box;
-        z-index: 25;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 8px 12px;
+        border-radius: 8px;
+        z-index: 20;
       }
 
       #buttonControls button {
-        flex: 1 1 auto;
+        flex: 1 1 0;
+        font-size: 16px;
+        padding: 10px 0;
         margin: 0;
-        padding: 6px 4px;
-        font-size: 14px;
-        max-height: 40px;
-        white-space: nowrap;
-        cursor: pointer;
       }
     }
   </style>

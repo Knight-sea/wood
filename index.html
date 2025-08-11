@@ -120,7 +120,7 @@
 
     @media screen and (max-width: 430px) {
 
-      /* 木材カウント */
+      /* 木材カウントは画面上部に固定しない、自然な位置 */
       #woodCount {
         position: static;
         display: block;
@@ -129,7 +129,7 @@
         margin: 5px auto;
       }
 
-      /* ゲーム画面 */
+      /* ゲーム画面(canvas)も自然に配置 */
       canvas {
         position: static;
         display: block;
@@ -138,18 +138,18 @@
         height: auto;
       }
 
-      /* スライダー */
+      /* 木こり割合スライダーは画面下固定 */
       #woodcutterCountRange {
         position: fixed;
-        bottom: 90px;
-        /* ボタンの少し上 */
+        bottom: 120px;
+        /* ボタン類の上に配置 */
         left: 50%;
         transform: translateX(-50%);
         width: 80%;
         z-index: 10;
       }
 
-      /* 操作ボタン */
+      /* 操作ボタン全体（controls & buttonControls）を下部に固定 */
       #controls,
       #buttonControls {
         position: fixed;
@@ -158,26 +158,12 @@
         transform: translateX(-50%);
         display: flex;
         flex-direction: row;
-        /* 横並び */
-        gap: 6px;
+        /* ボタン横並び */
+        gap: 8px;
         z-index: 10;
       }
 
-      /* 各ボタンをコンパクト化 */
-      #controls button,
-      #buttonControls button {
-        padding: 6px 10px;
-        /* 高さを減らす */
-        font-size: 14px;
-        /* 文字を小さく */
-        border-radius: 6px;
-        background-color: #ccc;
-        border: none;
-        min-width: 60px;
-        /* クリック範囲を確保 */
-      }
-
-      /* クリアメッセージ */
+      /* クリアメッセージは中央に固定 */
       #clearMessage {
         position: fixed;
         top: 50%;
@@ -185,9 +171,9 @@
         transform: translate(-50%, -50%);
         background-color: rgba(0, 0, 0, 0.7);
         color: white;
-        padding: 15px 20px;
+        padding: 20px 30px;
         border-radius: 10px;
-        font-size: 18px;
+        font-size: 20px;
         z-index: 20;
         text-align: center;
       }

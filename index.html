@@ -118,65 +118,65 @@
       background-color: #555;
     }
 
-    @media screen and (max-width:600px) {
+    @media screen and (max-width: 600px) {
 
+      /* 木材表示を上に独立して表示 */
       #woodCount {
-        top: 10px;
-        left: 10px;
-        right: auto;
-        transform: none;
-        z-index: 9999;
-      }
-      
-      #clearMessage {
         position: fixed;
         top: 10px;
         left: 50%;
         transform: translateX(-50%);
         right: auto;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 8px 12px;
+        border-radius: 8px;
+        white-space: nowrap;
         max-width: 95vw;
         text-align: center;
       }
 
+      /* controlsとbuttonControlsを画面下部に縦に並べて表示 */
       #controls,
       #buttonControls {
-        position: static;
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
         width: 95vw;
-        margin: 5px auto;
-        border-radius: 6px;
+        max-width: 400px;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 16px;
+        user-select: none;
+        box-sizing: border-box;
+        z-index: 9999;
         display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 12px;
-        padding: 8px 10px;
-        font-size: 16px;
+        flex-direction: column;
+        gap: 8px;
       }
 
-      #controls label {
-        margin: 0;
-        white-space: normal;
-        flex-grow: 1;
-        align-self: center;
+      /* controlsはボタンの上に表示 */
+      #controls {
+        bottom: 80px;
+        /* 下から80pxあける */
       }
 
-      #woodcutterCountRange {
-        flex-grow: 2;
-        height: 24px;
-        margin-left: 6px;
-        align-self: center;
-      }
-
+      /* buttonControlsは画面下端に固定 */
       #buttonControls {
-        margin-top: 0;
-        flex-wrap: nowrap;
-        width: 95vw;
+        bottom: 10px;
+        flex-direction: row;
+        /* ボタンは横並び */
+        justify-content: space-between;
       }
 
-      button {
-        width: auto;
+      /* ボタンの幅調整 */
+      #buttonControls button {
         flex: 1 1 auto;
+        margin: 0 4px;
+        padding: 10px 0;
         font-size: 16px;
-        padding: 8px 6px;
       }
     }
   </style>

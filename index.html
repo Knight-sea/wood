@@ -118,118 +118,59 @@
       background-color: #555;
     }
 
-    @media screen and (max-width:600px) {
+    @media screen and (max-width: 600px) {
 
-      /* canvas（マップ）は画面の上半分に収める */
-      #gameCanvas {
-        display: block;
-        width: 100vw;
-        height: 50vh;
-        /* 画面高さの半分 */
-        max-height: none !important;
-        border: 2px solid #224422;
-        box-sizing: border-box;
+      #woodCount,
+      #clearMessage {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        max-width: 95vw;
+        text-align: center;
       }
 
-      /* 木材表示は操作エリア内の上部に配置 */
-      #woodCount {
-        position: relative;
-        /* 固定解除 */
-        margin: 8px 0 4px 0;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 6px 12px;
-        font-size: 18px;
-        border-radius: 8px;
-        color: #fff;
-        user-select: none;
-        max-width: 90vw;
-        white-space: nowrap;
-      }
-
-      /* 人数スライダーは操作エリアの中で表示 */
-      #controls {
-        position: relative;
-        /* 固定解除 */
-        width: 100%;
-        max-width: 400px;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 8px 12px;
-        border-radius: 8px;
-        color: #fff;
+      #controls,
+      #buttonControls {
+        position: static;
+        width: 95vw;
+        margin: 5px auto;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 12px;
+        padding: 8px 10px;
         font-size: 16px;
-        user-select: none;
-        box-sizing: border-box;
-        margin-bottom: 8px;
       }
 
       #controls label {
-        margin: 0 0 4px 0;
+        margin: 0;
         white-space: normal;
-        display: block;
+        flex-grow: 1;
+        align-self: center;
       }
 
-      /* ボタン群は横並び、小さめにして操作エリア内に収める */
+      #woodcutterCountRange {
+        flex-grow: 2;
+        height: 24px;
+        margin-left: 6px;
+        align-self: center;
+      }
+
       #buttonControls {
-        position: relative;
-        /* 固定解除 */
-        width: 100%;
-        max-width: 400px;
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 6px 8px;
-        border-radius: 8px;
-        box-sizing: border-box;
+        margin-top: 0;
+        flex-wrap: nowrap;
+        width: 95vw;
       }
 
-      #buttonControls button {
-        flex: 1 1 0;
-        font-size: 14px;
+      button {
+        width: auto;
+        flex: 1 1 auto;
+        font-size: 16px;
         padding: 8px 6px;
-        margin: 0;
-        min-width: 0;
-        /* 横幅が広がりすぎないように */
       }
-
-      /* 操作エリア全体を画面下半分に配置 */
-      body {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        margin: 0;
-      }
-
-      main,
-      #gameCanvas {
-        flex-shrink: 0;
-      }
-
-      #controls,
-      #woodCount,
-      #buttonControls {
-        flex-shrink: 0;
-      }
-
-      #controls,
-      #woodCount,
-      #buttonControls {
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      /* 操作部分を下半分の中央にまとめるためにwrapperを追加推奨 */
-      /* もしwrapper要素を使えるなら */
-      /*
-  #uiWrapper {
-    height: 50vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-  }
-  */
     }
   </style>
 </head>
